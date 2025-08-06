@@ -5,7 +5,7 @@ import (
 	"setup-preoject/app/middleware"
 	"setup-preoject/app/model/dto"
 	"setup-preoject/app/model/entity"
-	"setup-preoject/app/service"
+	"setup-preoject/app/util"
 	"strings"
 	"time"
 
@@ -40,7 +40,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	if findUser.Password != service.GeneratePassword(request.Password) {
+	if findUser.Password != util.GeneratePassword(request.Password) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "password error"})
 		return
 	}
@@ -78,7 +78,7 @@ func (ac *AuthController) Register(c *gin.Context) {
 
 	entityUser := entity.User{
 		Username: request.Username,
-		Password: service.GeneratePassword(request.Password),
+		Password: util.GeneratePassword(request.Password),
 	}
 	result := ac.db.Create(&entityUser)
 	if result.Error != nil {
