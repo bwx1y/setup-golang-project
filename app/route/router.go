@@ -11,12 +11,13 @@ import (
 
 func SetupRoutes(r *gin.Engine, db *gorm.DB, cache *redis.Client) {
 	api := r.Group("/api")
+	v1 := api.Group("/v1")
 
 	// controller
 	authController := controller.NewAuthController(db, cache)
 
 	// setup route
-	auth := api.Group("/auth")
+	auth := v1.Group("/auth")
 	{
 		auth.POST("/login", authController.Login)
 		auth.POST("/register", authController.Register)
