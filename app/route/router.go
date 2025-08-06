@@ -11,6 +11,8 @@ import (
 
 func SetupRoutes(r *gin.Engine, db *gorm.DB, cache *redis.Client) {
 	api := r.Group("/api")
+
+	// version
 	v1 := api.Group("/v1")
 
 	// controller
