@@ -27,6 +27,7 @@ func GenerateToken(user entity.User, cache *redis.Client) (string, error) {
 		"username": user.Username,
 		"ssi":      user.Id,
 		"exp":      time.Now().Add(time.Hour * 24 * 20).Unix(),
+		//		"role": 	user.Role,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -46,7 +47,7 @@ func GenerateToken(user entity.User, cache *redis.Client) (string, error) {
 	return signedToken, nil
 }
 
-func AuthMiddleware(cache *redis.Client) gin.HandlerFunc {
+func AuthMiddleware(cache *redis.Client, roles []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -71,13 +72,33 @@ func AuthMiddleware(cache *redis.Client) gin.HandlerFunc {
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		claims, claimsOk := token.Claims.(jwt.MapClaims)
+		if claimsOk {
 			c.Set("username", claims["username"])
 			c.Set("ssi", claims["ssi"])
 		}
 
+		if role, ok := claims["role"]; ok && len(roles) != 0 {
+			if containsRole(roles, role.(string)) {
+				c.Set("role", role.(string))
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid role for token"})
+				c.Abort()
+				return
+			}
+		}
+
 		c.Next()
 	}
+}
+
+func containsRole(roles []string, role string) bool {
+	for _, item := range roles {
+		if item == role {
+			return true
+		}
+	}
+	return false
 }
 
 func validateToken(signedToken string, cache *redis.Client) (*jwt.Token, error) {

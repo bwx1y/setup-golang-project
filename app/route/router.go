@@ -23,6 +23,6 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cache *redis.Client) {
 	{
 		auth.POST("/login", authController.Login)
 		auth.POST("/register", authController.Register)
-		auth.GET("/me", middleware.AuthMiddleware(cache), authController.Me)
+		auth.GET("/me", middleware.AuthMiddleware(cache, nil), authController.Me)
 	}
 }
